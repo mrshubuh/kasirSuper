@@ -25,11 +25,16 @@ jobs:
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.19.6'
+          flutter-version: '3.24.5'
           channel: 'stable'
 
       - name: Flutter Version Info
         run: flutter --version
+
+      - name: Update Kotlin Version in build.gradle
+        run: |
+          sed -i "s/ext.kotlin_version = '[^']*'/ext.kotlin_version = '1.9.22'/" android/build.gradle || true
+          grep -i kotlin android/build.gradle || true
 
       - name: Install Flutter Dependencies
         run: flutter pub get
@@ -42,15 +47,8 @@ jobs:
         run: flutter test
         continue-on-error: true
 
-      - name: Update Kotlin Version
-        run: |
-          sed -i 's/ext.kotlin_version.*/ext.kotlin_version = "1.9.22"/' android/build.gradle
-          cat android/build.gradle
-
       - name: Build APK
         run: flutter build apk --release --no-tree-shake-icons
-        env:
-          JAVA_HOME: ${{ env.JAVA_HOME }}
 
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
