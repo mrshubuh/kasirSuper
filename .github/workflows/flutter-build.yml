@@ -31,10 +31,25 @@ jobs:
       - name: Flutter Version Info
         run: flutter --version
 
-      - name: Update Kotlin Version in build.gradle
+      - name: Fix Kotlin Version in Gradle files
         run: |
+          echo "=== android/settings.gradle ==="
+          cat android/settings.gradle
+          echo "=== android/build.gradle ==="
+          cat android/build.gradle
+          
+          # Patch settings.gradle - kotlin plugin version
+          sed -i 's/id "org.jetbrains.kotlin.android" version "[^"]*"/id "org.jetbrains.kotlin.android" version "1.9.22"/' android/settings.gradle || true
+          sed -i "s/id 'org.jetbrains.kotlin.android' version '[^']*'/id 'org.jetbrains.kotlin.android' version '1.9.22'/" android/settings.gradle || true
+          
+          # Patch build.gradle - ext.kotlin_version
+          sed -i 's/ext.kotlin_version = "[^"]*"/ext.kotlin_version = "1.9.22"/' android/build.gradle || true
           sed -i "s/ext.kotlin_version = '[^']*'/ext.kotlin_version = '1.9.22'/" android/build.gradle || true
-          grep -i kotlin android/build.gradle || true
+          
+          echo "=== AFTER PATCH settings.gradle ==="
+          cat android/settings.gradle
+          echo "=== AFTER PATCH build.gradle ==="
+          cat android/build.gradle
 
       - name: Install Flutter Dependencies
         run: flutter pub get
