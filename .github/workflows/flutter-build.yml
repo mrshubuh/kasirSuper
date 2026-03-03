@@ -13,47 +13,45 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 1. Clone repository
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      # 2. Setup Java (diperlukan untuk Android build)
       - name: Setup Java JDK
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
           java-version: '17'
 
-      # 3. Setup Flutter
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.24.0'
+          flutter-version: '3.19.6'
           channel: 'stable'
 
-      # 4. Cek versi Flutter
       - name: Flutter Version Info
         run: flutter --version
 
-      # 5. Install dependencies (pub get)
       - name: Install Flutter Dependencies
         run: flutter pub get
 
-      # 6. Analyze code
       - name: Analyze Code
         run: flutter analyze --no-fatal-infos
         continue-on-error: true
 
-      # 7. Run tests
       - name: Run Tests
         run: flutter test
         continue-on-error: true
 
-      # 8. Build APK (release)
+      - name: Update Kotlin Version
+        run: |
+          sed -i 's/ext.kotlin_version.*/ext.kotlin_version = "1.9.22"/' android/build.gradle
+          cat android/build.gradle
+
       - name: Build APK
         run: flutter build apk --release --no-tree-shake-icons
+        env:
+          JAVA_HOME: ${{ env.JAVA_HOME }}
 
-      # 9. Upload APK sebagai artifact (bisa didownload)
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
         with:
